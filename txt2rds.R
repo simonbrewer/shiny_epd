@@ -35,10 +35,5 @@ for (i in 1:length(site_files)) {
   
   dat$agebp <- as.numeric(substr(dat$agebp, 2, 10))
   
-  dat <- st_as_sf(dat, coords = c("lon", "lat"))
-  
-  st_crs(dat) <- 4326
-
-  st_write(dat, paste0("shpfiles/", file_name, "_", taxa_name, ".shp"),
-           driver = "ESRI Shapefile", append = FALSE)
+  saveRDS(dat, file = paste0("data//", file_name, "_", taxa_name, ".rds"))
 }
