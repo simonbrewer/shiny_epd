@@ -4,9 +4,11 @@ library(shiny)
 library(shinyWidgets)
 library(leaflet)
 library(dplyr)
+library(sf)
 
 # Define UI for application that draws a map
 data <- readRDS("./data/sites_654_Quercus.rds") 
+ice <- st_read("icefiles/icee_15000/icee_15000.shp", quiet = TRUE)
 
 ui <- bootstrapPage(
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
@@ -53,11 +55,14 @@ server <- function(input, output) {
     observe({
         leafletProxy("map", data = filteredData()) %>%
             clearMarkers() %>%
+            clearShapes() %>%
             addCircleMarkers(lng = ~lon, lat = ~lat, 
                              fillColor = ~qpal(freq), fillOpacity = 0.75,
                              radius = ~sqrt(freq) * 15, weight = 2,
                              popup = ~ent, 
-                             color = "black", stroke = TRUE)
+                             color = "black", stroke = TRUE) %>%
+            addPolygons(data = ice, fill=TRUE, 
+                        stroke = TRUE, weight = 4, color = "#2E86C1")
     })
     
 }
