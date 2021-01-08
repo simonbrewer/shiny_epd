@@ -5,14 +5,9 @@ library(shinyWidgets)
 library(leaflet)
 library(dplyr)
 library(sf)
-library(raster)
 
 # Define UI for application that draws a map
 data <- readRDS("./data/sites_654_Quercus.rds") 
-# Gridded data
-data_r <- stack("./data/grid_654.nc")
-data_r_times <- as.numeric(substr(names(data_r), 2, 10))
-# Ice sheets
 # ice <- st_read("icefiles/icee_15000/icee_15000.shp", quiet = TRUE)
 ice <- readRDS("./icefiles/ice_all.rds")
 
