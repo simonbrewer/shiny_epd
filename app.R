@@ -56,6 +56,11 @@ server <- function(input, output) {
     output$map<-renderLeaflet({
         leaflet(data) %>%
             addTiles() %>%
+            # addProviderTiles(
+            #     "Stamen.Terrain",
+            #     group = "Stamen.Terrain"
+            # ) %>%
+            
             fitBounds(~min(lon), ~min(lat), ~max(lon), ~max(lat))
         
     })
