@@ -5,9 +5,14 @@ library(shinyWidgets)
 library(leaflet)
 library(dplyr)
 library(sf)
+library(raster)
 
 # Define UI for application that draws a map
 data <- readRDS("./data/sites_654_Quercus.rds") 
+# Gridded data
+data_r <- stack("./data/grid_654.nc")
+data_r_times <- as.numeric(substr(names(data_r), 2, 10))
+# Ice sheets
 # ice <- st_read("icefiles/icee_15000/icee_15000.shp", quiet = TRUE)
 ice <- readRDS("./icefiles/ice_all.rds")
 
@@ -21,7 +26,10 @@ ui <- bootstrapPage(
                                   selected = 15000,
                                   grid = TRUE,
                                   animate =
-                                      animationOptions(interval = 600, loop = TRUE))
+                                      animationOptions(interval = 600, loop = TRUE)),
+                  radioButtons("maptype", label = "Map type",
+                               choices = list("Site" = 1, "Grid" = 2), 
+                               selected = 1)
                   # absolutePanel(top = 10, right = 10,
                   #               sliderInput("animation", 
                   #                           label = "Years BP:",
