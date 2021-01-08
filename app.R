@@ -8,6 +8,9 @@ library(sf)
 
 # Define UI for application that draws a map
 data <- readRDS("./data/sites_654_Quercus.rds") 
+# Read raster data
+data_r <- stack("./data/grid_654.nc")
+data_r_times <- as.numeric(substr(names(data_r), 2, 10))
 # ice <- st_read("icefiles/icee_15000/icee_15000.shp", quiet = TRUE)
 ice <- readRDS("./icefiles/ice_all.rds")
 
@@ -25,15 +28,6 @@ ui <- bootstrapPage(
                   radioButtons("maptype", label = "Map type",
                                choices = list("Site" = 1, "Grid" = 2), 
                                selected = 1)
-                  # absolutePanel(top = 10, right = 10,
-                  #               sliderInput("animation", 
-                  #                           label = "Years BP:",
-                  #                           min = 0,
-                  #                           max = 15000,
-                  #                           value = 15000,
-                  #                           step = 500,
-                  #                           animate =
-                  #                               animationOptions(interval = 600, loop = TRUE))
     )
     
 )
@@ -47,6 +41,12 @@ server <- function(input, output) {
         data %>% filter(agebp == input$animation)
     })
     
+    filteredGrid <- reactive({
+        #add rollified thing
+        rID <- which(data_r_times == input$animation)
+        raster(data_r, rID)
+    })
+    
     filteredIce <- reactive({
         #add rollified thing
         if (input$animation >= 10000) {
@@ -54,7 +54,9 @@ server <- function(input, output) {
         } 
     })
     
-    qpal <- colorBin("YlOrRd", data$freq, bins = 7, pretty = TRUE)
+    qpal <- colorBin("YlOrRd", data$freq, bins = 7, pretty = TRUE, na.color = "transparent")
+    rpal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(data_r),
+                         na.color = "transparent")
     
     output$map<-renderLeaflet({
         leaflet(data) %>%
@@ -69,26 +71,50 @@ server <- function(input, output) {
     })
     
     observe({
-        if (input$animation >= 10000) {
-            leafletProxy("map", data = filteredData()) %>%
-                clearMarkers() %>%
-                clearShapes() %>%
-                addCircleMarkers(lng = ~lon, lat = ~lat, 
-                                 fillColor = ~qpal(freq), fillOpacity = 0.75,
-                                 radius = ~sqrt(freq) * 15, weight = 2,
-                                 popup = ~ent, 
-                                 color = "black", stroke = TRUE) %>%
-                addPolygons(data = filteredIce(), fill=TRUE, 
-                            stroke = TRUE, weight = 4, color = "#2E86C1")
-        } else {
-            leafletProxy("map", data = filteredData()) %>%
-                clearMarkers() %>%
-                clearShapes() %>%
-                addCircleMarkers(lng = ~lon, lat = ~lat, 
-                                 fillColor = ~qpal(freq), fillOpacity = 0.75,
-                                 radius = ~sqrt(freq) * 15, weight = 2,
-                                 popup = ~ent, 
-                                 color = "black", stroke = TRUE)
+        if (input$maptype == 1) {
+            if (input$animation >= 10000) {
+                leafletProxy("map", data = filteredData()) %>%
+                    clearMarkers() %>%
+                    clearImages() %>%
+                    clearShapes() %>%
+                    addCircleMarkers(lng = ~lon, lat = ~lat, 
+                                     fillColor = ~qpal(freq), fillOpacity = 0.75,
+                                     radius = ~sqrt(freq), weight = 2,
+                                     popup = ~ent, 
+                                     color = "black", stroke = TRUE) %>%
+                    addPolygons(data = filteredIce(), fill=TRUE, 
+                                stroke = TRUE, weight = 4, color = "#2E86C1")
+            } else {
+                leafletProxy("map", data = filteredData()) %>%
+                    clearMarkers() %>%
+                    clearImages() %>%
+                    clearShapes() %>%
+                    addCircleMarkers(lng = ~lon, lat = ~lat, 
+                                     fillColor = ~qpal(freq), fillOpacity = 0.75,
+                                     radius = ~sqrt(freq), weight = 2,
+                                     popup = ~ent, 
+                                     color = "black", stroke = TRUE)
+            }
+        }
+        if (input$maptype == 2) {
+            if (input$animation >= 10000) {
+                leafletProxy("map") %>%
+                    clearMarkers() %>%
+                    clearImages() %>%
+                    clearShapes() %>%
+                    addRasterImage(filteredGrid(), opacity = 0.8,
+                                   colors = qpal) %>%
+                    addPolygons(data = filteredIce(), fill=TRUE, 
+                                stroke = TRUE, weight = 4, color = "#2E86C1")
+            } else {
+                leafletProxy("map") %>%
+                    clearMarkers() %>%
+                    clearImages() %>%
+                    clearShapes() %>%
+                    addRasterImage(filteredGrid(), opacity = 0.8,
+                                   colors = qpal)
+            }
+
         }
     })
     
