@@ -5,6 +5,7 @@ library(shinyWidgets)
 library(leaflet)
 library(dplyr)
 library(sf)
+library(rgdal)
 library(ncdf4)
 library(raster)
 
