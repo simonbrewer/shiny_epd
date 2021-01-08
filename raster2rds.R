@@ -19,7 +19,7 @@ nspp <- length(mySpp)
 for (i in 1:nspp) {
   r <- stack("~/Dropbox/Data/epd/mapping/maps2010/intmaps_v1/epdTaxaVals.nc", 
               varname = sppSName[i])
-  
+
   writeRaster(r, paste0("./data/grid_", mySpp[i], ".nc"),
               varname ="freq", overwrite = TRUE, zname = "agebp")
 }
