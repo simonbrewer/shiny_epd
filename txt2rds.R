@@ -33,6 +33,8 @@ for (i in 1:length(site_files)) {
               variable.name = "agebp", value.name = "freq") %>%
     filter(!is.na(freq))
   
+  dat$freq <- dat$freq * 100
+  
   dat$agebp <- as.numeric(substr(dat$agebp, 2, 10))
   
   saveRDS(dat, file = paste0("data//", file_name, "_", taxa_name, ".rds"))
